@@ -8,8 +8,8 @@
   "
 >
   <p>
-    {{- '©' }}
-    <time>{{ 'now' | date: '%Y' }}</time>
+    {{- '© 2024.03 ~ ' }}
+    <time>{{ 'now' | date: '%Y.%m' }}</time>
 
     {% if site.social.links %}
       <a href="{{ site.social.links[0] }}">{{ site.social.name }}</a>.
@@ -17,26 +17,30 @@
       <em class="fst-normal">{{ site.social.name }}</em>.
     {% endif %}
 
-    {% if site.data.locales[include.lang].copyright.brief %}
-      <span
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-        title="{{ site.data.locales[include.lang].copyright.verbose }}"
-      >
-        {{- site.data.locales[include.lang].copyright.brief -}}
-      </span>
-    {% endif %}
+    {% comment %}
+      {% if site.data.locales[include.lang].copyright.brief %}
+        <span
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="{{ site.data.locales[include.lang].copyright.verbose }}"
+        >
+          {{- site.data.locales[include.lang].copyright.brief -}}
+        </span>
+      {% endif %}
+    {% endcomment %}
   </p>
 
-  <p>
-    {%- capture _platform -%}
-      <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>
-    {%- endcapture -%}
+  {% comment %}
+    <p>
+      {%- capture _platform -%}
+        <a href="https://jekyllrb.com" target="_blank" rel="noopener">Jekyll</a>
+      {%- endcapture -%}
 
-    {%- capture _theme -%}
-      <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a>
-    {%- endcapture -%}
+      {%- capture _theme -%}
+        <a href="https://github.com/cotes2020/jekyll-theme-chirpy" target="_blank" rel="noopener">Chirpy</a>
+      {%- endcapture -%}
 
-    {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
-  </p>
+      {{ site.data.locales[include.lang].meta | replace: ':PLATFORM', _platform | replace: ':THEME', _theme }}
+    </p>
+  {% endcomment %}
 </footer>

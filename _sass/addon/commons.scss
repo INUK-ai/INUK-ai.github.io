@@ -705,7 +705,9 @@ $btn-mb: 0.5rem;
   overflow-y: auto;
   width: $sidebar-width;
   z-index: 99;
-  background: var(--sidebar-bg);
+  background: url('/assets/img/sidebarCover.png');
+  background-size: 100% 100%;
+  background-position: center;
   border-right: 1px solid var(--sidebar-border-color);
 
   /* Hide scrollbar for Chrome, Safari and Opera */
@@ -771,6 +773,8 @@ $btn-mb: 0.5rem;
   }
 
   .site-subtitle {
+    font-family: Lato, 'Microsoft Yahei', sans-serif;
+    font-weight: 700;
     font-size: 95%;
     color: var(--site-subtitle-color);
     margin-top: 0.25rem;
