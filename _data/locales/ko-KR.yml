@@ -25,12 +25,12 @@ search:
 panel:
   lastmod: 최근 업데이트
   trending_tags: 인기 태그
-  toc: 바로가기
+  toc: 목차
 
 copyright:
   # Shown at the bottom of the post
   license:
-    template: 이 기사는 저작권자의 :LICENSE_NAME 라이센스를 따릅니다.
+    template: 이 글은 저작권자의 :LICENSE_NAME 라이센스를 따릅니다.
     name: CC BY 4.0
     link: https://creativecommons.org/licenses/by/4.0/
 
@@ -58,8 +58,8 @@ post:
   words: 단어
   pageview_measure: 조회
   read_time:
-    unit: 분
-    prompt: 읽는 시간
+    unit: min
+    prompt: read
   relate_posts: 관련된 글
   share: 공유하기
   button:
