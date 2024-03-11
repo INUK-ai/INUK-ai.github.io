@@ -9,7 +9,7 @@
   --main-border-color: rgb(44, 45, 45);
 
   /* Common color */
-  --text-color: rgb(175, 176, 177);
+  --text-color: rgb(137, 138, 139);
   --text-muted-color: #868686;
   --text-muted-hightlight-color: #aeaeae;
   --heading-color: #cccccc;
@@ -47,10 +47,10 @@
   --avatar-border-color: rgb(206, 206, 206, 0.9);
 
   /* Topbar */
-  --topbar-bg: rgb(27, 27, 30, 0.64);
+  --topbar-bg: rgba(39, 39, 41, 0.64);
   --topbar-text-color: var(--text-color);
   --search-border-color: rgb(55, 55, 55);
-  --search-icon-color: rgb(100, 102, 105);
+  --search-icon-color: rgb(82, 84, 85);
   --input-focus-border-color: rgb(112, 114, 115);
 
   /* Home page */
@@ -67,7 +67,7 @@
   --footnote-target-bg: rgb(63, 81, 181);
   --btn-share-color: #6c757d;
   --btn-share-hover-color: #bfc1ca;
-  --card-bg: #1e1e1e;
+  --card-bg: #1f1f1f;
   --card-hovor-bg: #464d51;
   --card-shadow: rgb(21, 21, 21, 0.72) 0 6px 18px 0,
     rgb(137, 135, 135, 0.24) 0 0 0 1px;
