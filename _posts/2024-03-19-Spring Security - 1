@@ -1,8 +1,9 @@
 ---
-title: Spring Security #1
+title: Spring Security - 1
 date: 2024-03-19 +09:00
 categories: [Backend, Spring]
 tags: [backend, spring, security, config]
+use_math: false
 ---
 
 ## Servlet Authentication Architecture
