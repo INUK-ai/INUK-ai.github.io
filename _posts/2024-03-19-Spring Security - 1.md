@@ -1,12 +1,12 @@
 ---
-title: Spring Security - 1
+title: Spring Security - 1 
 date: 2024-03-19 +09:00
 categories: [Backend, Spring]
 tags: [backend, spring, security, config]
-use_math: false
 ---
 
 ## Servlet Authentication Architecture
+---
 
 ### SecurityContextHolder
 
@@ -24,7 +24,7 @@ context.setAuthentication(authentication);
 SecurityContextHolder.setContext(context);
 ```
 
-1. 빈 _SecurityContext_ 생성합니다.
+1. 빈 _SecurityContext_ 를 생성합니다.
     - _Multi Threads_ 에서의 _Race conditions_ 를 피하기 위해 `SecurityContextHolder.getContext().setAuthentication(authentication)` 대신 새 _SecurityContext_ 인스턴스를 만들어야 합니다.
 2. 새 _Authentication_ 객체를 생성합니다.
     - _Spring Security_ 는 _SecurityContext_ 에 어떤 유형의 인증 구현이 설정되어 있는지는 신경 쓰지 않습니다.
