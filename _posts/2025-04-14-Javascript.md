@@ -1,7 +1,7 @@
 ---
 title: Javascript
 date: 2025-04-14 +019:00
-categories: [AIBE]
+categories: [AIBE, FRONT-END]
 tags: [frontend, javascript]
 ---
 
