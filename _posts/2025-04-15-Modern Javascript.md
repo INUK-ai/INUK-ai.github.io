@@ -1,5 +1,5 @@
 ---
-title: Javascript
+title: Modern Javascript
 date: 2025-04-15 +019:00
 categories: [AIBE, FRONT-END]
 tags: [frontend, javascript]
