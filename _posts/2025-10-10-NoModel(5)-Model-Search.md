@@ -14,6 +14,7 @@ description: "Elasticsearch 색인부터 API, 캐시 전략까지 NoModel 모델
 - **캐시·후처리**: `CachedModelSearchService`가 키워드 없는 인기 조회만 Redis에 캐싱하고, `FileService`가 이미지 URL을 일괄 조합해 검색 응답 DTO를 완성합니다.
 - **무효화**: `SmartCacheEvictionService`와 `LazyInvalidationService`가 모델·리뷰 이벤트에 따라 즉시 또는 지연 방식으로 캐시를 비웁니다.
 
+
 ## 도메인 모델 구조
 
 도메인 엔티티는 검색 파이프라인의 데이터 흐름을 결정하므로 주요 클래스별 구조를 토글로 정리했습니다.
@@ -1129,10 +1130,7 @@ public class LazyInvalidationService {
 
 ### 모델 상세 조회 구조 개편
 
-모델 상세 화면은 정적 정보(모델 소개, 태그)와 변동 정보(통계, 최신 리뷰)를 한 번에 제공해야 했습니다. 
-초기에는 단일 API에서 모델·리뷰·파일 데이터를 순차적으로 조회해 응답마다 다중 DB 호출이 발생했고, 요청이 몰리면 지연이 크게 늘었습니다. 
-정적 블록(모델 기본 정보, 이미지 등)은 매번 값이 크게 바뀌지 않는다는 점에 주목해 Redis 캐시 어사이드 도입을 검토했고, 그 결과 `CachedModelDetailService`가 정적 블록을 캐시에서 제공하면서 모델·파일 정보를 매번 JPA로 불러오지 않도록 개선했습니다. 
-변동 정보는 요청 시점마다 `ModelStatisticsService`와 리뷰 리포지토리를 통해 즉시 조립해 최신성을 확보하며, 최종 응답은 `AIModelDetailResponse.of`가 정적·동적·리뷰 데이터를 합성하도록 분리되어 있습니다. Elasticsearch 증분 동기화는 검색 인덱스 유지를 위한 별도 경로로 활용되고, 상세 화면 통계와 조회수는 RDB + Redis 조합으로 직접 관리됩니다.
+모델 상세 화면은 정적 정보(모델 소개, 태그)와 변동 정보(통계, 최신 리뷰)를 한 번에 제공해야 했습니다. 초기에는 단일 API에서 모델·리뷰·파일 데이터를 순차적으로 조회해 응답마다 다중 DB 호출이 발생했고, 요청이 몰리면 지연이 크게 늘었습니다. 정적 블록(모델 기본 정보, 이미지 등)은 매번 값이 크게 바뀌지 않는다는 점에 주목해 Redis 캐시 어사이드 도입을 검토했고, 그 결과 `CachedModelDetailService`가 정적 블록을 캐시에서 제공하면서 모델·파일 정보를 매번 JPA로 불러오지 않도록 개선했습니다. 변동 정보는 요청 시점마다 `ModelStatisticsService`와 리뷰 리포지토리를 통해 즉시 조립해 최신성을 확보하며, 최종 응답은 `AIModelDetailResponse.of`가 정적·동적·리뷰 데이터를 합성하도록 분리되어 있습니다. Elasticsearch 증분 동기화는 검색 인덱스 유지를 위한 별도 경로로 활용되고, 상세 화면 통계와 조회수는 RDB + Redis 조합으로 직접 관리됩니다.
 
 <details markdown="1">
 <summary>`ModelStatisticsService.java`</summary>
@@ -1188,7 +1186,7 @@ public class AIModelDetailFacadeService {
     private final ReviewRepository reviewRepository;
 
     public AIModelDetailResponse getModelDetail(Long modelId, Long memberId) {
-        AIModelStaticDetail staticDetail = cachedModelDetailService.getModelStaticDetailWithView(modelId);
+        AIModelStaticDetail staticDetail = cachedModelDetailService.getModelStaticDetailWithView(modelId, memberId);
         AIModelDynamicStats dynamicStats = statisticsService.getDynamicStats(modelId, memberId);
         List<ReviewResponse> reviews = reviewRepository
                 .findByModelIdAndStatus(modelId, ReviewStatus.ACTIVE)
@@ -1281,13 +1279,17 @@ public class CachedModelDetailService {
 과거에는 모델 편집 직후에도 캐시가 늦게 비워지면서 오래된 데이터가 노출되는 일이 잦았습니다. 이를 해결하려고 `ModelCacheService`를 재정비해 `updateModelDetailCache` 중심의 즉시 갱신 패턴을 도입하고, 캐시 갱신은 `@Transactional(readOnly = true)` 경계에서 수행해 본 트랜잭션 롤백과 분리했습니다. 변경 유형별로 “즉시 무효화 vs 지연 배치”를 나눠 캐시 안정성을 유지하면서 재빌드 비용을 줄이는 구조입니다.
 
 - **가격/공개 변경**: `handlePriceUpdate`, `handleVisibilityUpdate`가 상세 캐시를 즉시 갱신하고 검색 캐시를 바로 비우거나 덮어쓴 뒤 더티 마킹을 남깁니다.
-- **리뷰 변경**: 상세 캐시는 즉시 갱신하지만 검색 캐시는 `LazyInvalidationService`가 처리하도록 지연 무효화합니다.
+- **리뷰 변경**: 상세 캐시는 즉시 갱신하면서 검색 캐시는 `LazyInvalidationService`로 넘겨 지연 무효화합니다.
 - **기본 정보·파일 변경**: 상세 캐시만 갱신하고 검색 캐시는 더티 마킹 후 배치가 비우도록 합니다.
 - **모델 삭제**: `evictOnModelDelete` 호출로 상세·검색 캐시를 모두 즉시 제거합니다.
 
 ### 리뷰 API 분리 및 응답 통합
 
 리뷰 데이터는 건수가 많아질수록 모델 상세 응답을 지연시키는 주된 원인이었습니다. 현재 상세 API(`/models/{id}`)는 최신 리뷰 목록을 함께 반환하고, 필요할 때 `/models/{id}/reviews` 엔드포인트를 통해 모델 정보와 리뷰 정보를 컴포넌트 단위로 따로 호출할 수 있도록 API가 마련되어 있습니다. 두 데이터를 완전히 분리해 컴포넌트별로 불러오는 개선은 추후 과제로 남겨두었습니다.
+
+### ModelDetailDialog UI 개선
+
+모델 상세 모달은 이미지 비율이 들쭉날쭉하고 별도 뷰어가 중복 표시되어 사용자 경험을 해쳤습니다. 현재는 모달 내부 이미지를 `object-contain`으로 중앙 정렬하고 불필요한 뷰어를 제거했으며, Skeleton·Toast·Progress UI를 더해 로딩·알림 상태를 명확히 전달합니다.
 
 ## 06. 테스트 & 운영 관찰
 
@@ -1297,7 +1299,13 @@ public class CachedModelDetailService {
 - `SmartCacheEvictionService#emergencyEviction`은 구조화된 로그로 모델 ID·사유·타임스탬프를 남기고 향후 알림 연동 지점을 열어 둡니다.
 - 인덱스 상태는 `ElasticsearchIndexService#getIndexStats`로 문서 수와 존재 여부를 확인해 운영 대시보드에 연계할 수 있습니다.
 
-## 07. 한계 및 향후 개선
+## 07. 성능 개선 요약
+
+- **초기 증상**: 부하 테스트(VU 150명, 모델 500개, 18분 러닝)에서 초당 약 90건 처리, 평균 응답 3.9초, 최대 30초까지 지연이 발생했습니다. Wildcard 기반 검색이 전체 인덱스를 광범위하게 스캔하고, 변동 데이터가 잦은 필드를 실시간으로 색인하면서 Elasticsearch와 DB 모두에 부담이 컸습니다.
+- **개선 조치**: 검색 조건을 prefix/match 조합으로 바꿔 불필요한 스캔을 줄이고, Redis 캐시로 동일 조건의 첫 2페이지(페이지당 20건)를 저장했습니다. 조회수·사용량처럼 변동성이 큰 필드는 `ModelStatistics`에서 직접 관리하고 검색 인덱스에는 집계된 값만 반영하도록 조정했습니다.
+- **결과**: 같은 환경에서 초당 700건 처리, 평균 응답 142ms, 최대 응답 3.5초로 개선됐으며, 검색 인덱스 재색인 빈도도 크게 줄었습니다.
+
+## 08. 한계 및 향후 개선
 
 - 현재 검색 쿼리와 캐시 조건이 분기마다 제각각이어서 유지보수가 어렵습니다. 공통 파라미터 객체와 전략 패턴을 도입해 필터 조합을 선언형으로 다루는 방안을 검토 중입니다.
 - 색인/검색 실패를 포착할 전용 알림이 없어 장애 시 로그에 의존하고 있습니다. Elasticsearch 응답 시간을 계량하고 APM·알림 시스템과 연동하는 방향으로 보강할 계획입니다.
