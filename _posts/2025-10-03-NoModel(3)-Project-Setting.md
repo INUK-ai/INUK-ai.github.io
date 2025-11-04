@@ -169,6 +169,18 @@ public class ApiUtils {
                            .body(ApiUtils.error(body));
   }
   ```
+- `ErrorCode` 열거형에는 도메인별 코드와 `HttpStatus`가 정의돼 있으며, 아래처럼 일부 대표 항목을 사용합니다.
+  ```java
+  @Getter
+  public enum ErrorCode {
+      INVALID_REQUEST("IRE001", HttpStatus.BAD_REQUEST, "Invalid request"),
+      MEMBER_NOT_FOUND("MNF001", HttpStatus.NOT_FOUND, "Member not found"),
+      MODEL_NOT_FOUND("MONF001", HttpStatus.NOT_FOUND, "Model not found"),
+      REVIEW_NOT_ALLOWED("RV003", HttpStatus.FORBIDDEN, "Not allowed to modify or delete this review"),
+      PAYMENT_VERIFICATION_FAILED("PVF001", HttpStatus.BAD_REQUEST, "Payment verification failed.");
+      // ... (도메인별 항목 추가 정의)
+  }
+  ```
 
 ## 04. 리소스 · DevOps 세팅
 
