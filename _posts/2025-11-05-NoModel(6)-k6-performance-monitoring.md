@@ -1,15 +1,8 @@
 ---
-title: "k6 기반 모델 검색 테스트·모니터링 파이프라인"
-date: 2025-11-05 10:00:00 +0900
-categories:
-  - 운영
-  - 테스트
-tags:
-  - k6
-  - 성능테스트
-  - 모니터링
-  - Grafana
-  - InfluxDB
+title: k6 기반 모델 검색 테스트·모니터링 파이프라인
+date: 2025-11-05 +09:00
+categories: [PROGRAMMERS, PROJECT]
+tags: [NoModel, k6, 성능테스트, 모니터링, Grafana, InfluxDB]
 ---
 
 모델 검색 품질을 안정적으로 유지하려면 기능 검증과 성능 관찰을 한 번에 수행할 수 있는 파이프라인이 필요합니다. 이 글에서는 k6 시나리오부터 InfluxDB·Grafana 기반 모니터링까지, AI 모델 검색 도메인을 검증하는 전체 흐름을 정리합니다.
